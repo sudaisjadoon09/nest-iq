@@ -1,0 +1,1279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NESTIQ — The Global AI Real Estate Ecosystem</title>
+<link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=Satoshi:wght@300;400;500;700;900&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════
+   NESTIQ DESIGN SYSTEM
+═══════════════════════════════════════════════ */
+:root{
+  --bg:#05060a;--bg2:#0a0d14;--bg3:#0f1420;--bg4:#141c2e;
+  --surface:#1a2235;--surface2:#1f2a3d;--surface3:#243047;
+  --border:rgba(255,255,255,.06);--border2:rgba(255,255,255,.10);--border3:rgba(255,255,255,.16);
+  --blue:#4f8ef7;--blue-dim:rgba(79,142,247,.12);--blue-glow:rgba(79,142,247,.30);
+  --cyan:#22d3ee;--cyan-dim:rgba(34,211,238,.10);
+  --emerald:#10b981;--emerald-dim:rgba(16,185,129,.10);
+  --amber:#f59e0b;--amber-dim:rgba(245,158,11,.10);
+  --rose:#f43f5e;--rose-dim:rgba(244,63,94,.10);
+  --violet:#8b5cf6;--violet-dim:rgba(139,92,246,.10);
+  --text:#eef2ff;--text2:#94a3b8;--text3:#475569;
+  --mono:'JetBrains Mono',monospace;
+  --radius:16px;--radius2:24px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Satoshi',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;cursor:none}
+
+/* ── CURSOR ── */
+#CUR,#RING{position:fixed;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);border-radius:50%}
+#CUR{width:8px;height:8px;background:var(--blue);transition:transform .08s}
+#RING{width:32px;height:32px;border:1.5px solid rgba(79,142,247,.5);transition:left .13s ease,top .13s ease,width .2s,height .2s}
+body.hov #CUR{transform:translate(-50%,-50%) scale(2.5);background:var(--cyan)}
+body.hov #RING{width:52px;height:52px;border-color:rgba(34,211,238,.6)}
+
+/* ── NOISE ── */
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='.03'/%3E%3C/svg%3E");
+  opacity:.5}
+
+/* ── LOADER ── */
+#LDR{position:fixed;inset:0;z-index:9990;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;transition:opacity .7s,visibility .7s}
+#LDR.gone{opacity:0;visibility:hidden}
+.ldr-logo{font-family:'Clash Display',sans-serif;font-size:2.8rem;font-weight:700;letter-spacing:-.04em}
+.ldr-logo span{color:var(--blue)}
+.ldr-bar{width:180px;height:2px;background:var(--surface2);border-radius:1px;overflow:hidden}
+.ldr-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--cyan));width:0;animation:lf 2s ease forwards}
+@keyframes lf{to{width:100%}}
+.ldr-txt{font-family:var(--mono);font-size:.65rem;color:var(--text3);letter-spacing:.1em;animation:txtcycle 2s steps(1) infinite}
+@keyframes txtcycle{0%{content:'Initialising AI...'}25%{content:'Loading market data...'}50%{content:'Verifying listings...'}75%{content:'Ready.'}}
+
+/* ── TOAST ── */
+#TOAST{position:fixed;bottom:24px;right:24px;z-index:8000;
+  background:var(--surface2);border:1px solid var(--border2);border-radius:14px;
+  padding:14px 20px;font-size:.82rem;font-weight:600;color:var(--text);
+  box-shadow:0 16px 48px rgba(0,0,0,.6);max-width:320px;
+  transform:translateY(70px);opacity:0;transition:all .35s cubic-bezier(.34,1.56,.64,1)}
+#TOAST.on{transform:translateY(0);opacity:1}
+
+/* ── MODAL ── */
+#MOD{position:fixed;inset:0;z-index:7000;background:rgba(5,6,10,.88);backdrop-filter:blur(12px);
+  display:none;align-items:center;justify-content:center;padding:20px}
+#MOD.on{display:flex;animation:fin .25s ease}
+@keyframes fin{from{opacity:0}to{opacity:1}}
+.mod-box{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius2);
+  max-width:760px;width:100%;max-height:88vh;overflow-y:auto;padding:36px;
+  animation:sup .3s ease;scrollbar-width:thin;scrollbar-color:var(--surface2) transparent}
+@keyframes sup{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── NAV ── */
+nav{position:fixed;top:0;left:0;right:0;z-index:500;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px 60px;background:rgba(5,6,10,.82);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border)}
+.nav-logo{font-family:'Clash Display',sans-serif;font-weight:700;font-size:1.4rem;letter-spacing:-.04em}
+.nav-logo span{color:var(--blue)}
+.nav-links{display:flex;gap:28px;list-style:none}
+.nav-links a{font-size:.82rem;font-weight:500;color:var(--text2);text-decoration:none;transition:color .2s;letter-spacing:.01em}
+.nav-links a:hover{color:var(--text)}
+.nav-right{display:flex;gap:10px;align-items:center}
+.nbtn{height:36px;padding:0 18px;border-radius:100px;font-family:'Satoshi',sans-serif;font-size:.8rem;font-weight:700;cursor:pointer;transition:all .2s}
+.nbtn-ghost{background:transparent;border:1px solid var(--border2);color:var(--text2)}
+.nbtn-ghost:hover{border-color:var(--blue);color:var(--blue)}
+.nbtn-solid{background:var(--blue);border:none;color:white;box-shadow:0 0 20px var(--blue-glow)}
+.nbtn-solid:hover{transform:translateY(-1px);box-shadow:0 0 32px var(--blue-glow)}
+.nav-page-btns{display:flex;gap:6px}
+.npb{height:30px;padding:0 14px;border-radius:8px;font-size:.72rem;font-weight:700;
+  background:var(--surface);border:1px solid var(--border);color:var(--text2);
+  cursor:pointer;transition:all .2s;font-family:'Satoshi',sans-serif}
+.npb:hover,.npb.active{background:var(--blue);border-color:var(--blue);color:white}
+
+/* ══════════════════════════════════════════════
+   PAGE SYSTEM
+══════════════════════════════════════════════ */
+.page{display:none;min-height:100vh;padding-top:72px}
+.page.active{display:block}
+
+/* ══════════════════════════════════════════════
+   HOME PAGE
+══════════════════════════════════════════════ */
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:100px 24px 60px;text-align:center;position:relative;overflow:hidden}
+.hero-mesh{position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse 90% 60% at 50% 30%,rgba(79,142,247,.12) 0%,transparent 70%),
+             radial-gradient(ellipse 50% 50% at 80% 70%,rgba(34,211,238,.07) 0%,transparent 60%),
+             radial-gradient(ellipse 40% 40% at 15% 60%,rgba(139,92,246,.06) 0%,transparent 60%)}
+.hero-grid{position:absolute;inset:0;
+  background-image:linear-gradient(rgba(79,142,247,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(79,142,247,.03) 1px,transparent 1px);
+  background-size:72px 72px;
+  mask-image:radial-gradient(ellipse 80% 80% at 50% 40%,black 0%,transparent 100%)}
+
+.hero-eyebrow{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;
+  border:1px solid rgba(79,142,247,.3);border-radius:100px;font-size:.72rem;font-weight:700;
+  color:var(--blue);background:var(--blue-dim);letter-spacing:.06em;text-transform:uppercase;
+  margin-bottom:32px;position:relative;z-index:2;animation:up .6s ease both}
+.hero-eyebrow::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--blue);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(1.6)}}
+
+.hero h1{font-family:'Clash Display',sans-serif;font-weight:700;
+  font-size:clamp(3.2rem,9vw,7rem);line-height:.97;letter-spacing:-.05em;
+  position:relative;z-index:2;animation:up .7s .1s ease both;max-width:900px}
+.hero h1 .grad{background:linear-gradient(135deg,var(--blue) 0%,var(--cyan) 55%,var(--violet) 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.hero-sub{font-size:1.1rem;color:var(--text2);max-width:560px;line-height:1.72;
+  margin-top:22px;position:relative;z-index:2;animation:up .7s .2s ease both;font-weight:400}
+
+/* SEARCH */
+.search-wrap{width:100%;max-width:800px;margin-top:44px;position:relative;z-index:2;animation:up .7s .3s ease both}
+.search-box{background:var(--surface);border:1.5px solid var(--border2);border-radius:20px;
+  padding:8px 8px 8px 22px;display:flex;align-items:center;gap:0;
+  transition:border-color .3s,box-shadow .3s;
+  box-shadow:0 24px 60px rgba(0,0,0,.5),0 0 0 1px rgba(79,142,247,.0)}
+.search-box:focus-within{border-color:rgba(79,142,247,.6);box-shadow:0 0 0 4px var(--blue-dim),0 24px 60px rgba(0,0,0,.5)}
+.search-icon{font-size:1.1rem;opacity:.4;flex-shrink:0}
+.search-input{flex:1;background:transparent;border:none;outline:none;
+  font-family:'Satoshi',sans-serif;font-size:1.05rem;font-weight:500;color:var(--text);
+  padding:12px 14px}
+.search-input::placeholder{color:var(--text3)}
+.city-select{height:44px;padding:0 14px;background:var(--surface2);border:1px solid var(--border);
+  border-radius:12px;color:var(--text2);font-family:'Satoshi',sans-serif;font-size:.82rem;
+  outline:none;cursor:pointer;margin-right:8px;min-width:130px}
+.city-select option{background:var(--bg3)}
+.search-btn{height:52px;padding:0 28px;background:var(--blue);border:none;border-radius:14px;
+  font-family:'Clash Display',sans-serif;font-weight:600;font-size:.95rem;color:white;
+  cursor:pointer;white-space:nowrap;transition:all .2s;display:flex;align-items:center;gap:8px;
+  box-shadow:0 0 24px var(--blue-glow)}
+.search-btn:hover{box-shadow:0 0 40px var(--blue-glow);transform:translateY(-1px)}
+
+.ai-hint{font-family:var(--mono);font-size:.65rem;color:var(--text3);margin-top:10px;letter-spacing:.03em}
+.sample-queries{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:14px}
+.sq{padding:6px 14px;border:1px solid var(--border);border-radius:100px;
+  font-size:.73rem;font-weight:500;color:var(--text2);cursor:pointer;transition:all .2s;background:transparent;
+  font-family:'Satoshi',sans-serif}
+.sq:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-dim)}
+
+/* CITY CARDS */
+.cities-section{padding:80px 60px;max-width:1400px;margin:0 auto}
+.sec-label{font-family:var(--mono);font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;color:var(--blue);margin-bottom:14px}
+.sec-title{font-family:'Clash Display',sans-serif;font-weight:700;font-size:clamp(1.8rem,4vw,3rem);letter-spacing:-.04em}
+.sec-title .g{background:linear-gradient(135deg,var(--blue),var(--cyan));-webkit-background-clip:text;background-clip:text;color:transparent}
+.cities-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-top:40px}
+.city-card{border-radius:var(--radius2);overflow:hidden;cursor:pointer;position:relative;
+  height:280px;transition:transform .3s,box-shadow .3s;border:1px solid var(--border)}
+.city-card:hover{transform:translateY(-6px);box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.city-card img{width:100%;height:100%;object-fit:cover;transition:transform .4s}
+.city-card:hover img{transform:scale(1.07)}
+.city-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(5,6,10,.92) 0%,rgba(5,6,10,.2) 60%,transparent 100%)}
+.city-info{position:absolute;bottom:0;left:0;right:0;padding:20px}
+.city-name{font-family:'Clash Display',sans-serif;font-weight:700;font-size:1.2rem;letter-spacing:-.03em}
+.city-country{font-size:.72rem;color:var(--text2);margin-top:2px;font-weight:500}
+.city-count{font-family:var(--mono);font-size:.65rem;color:var(--blue);margin-top:6px;letter-spacing:.04em}
+.city-flag{position:absolute;top:14px;right:14px;font-size:1.4rem;
+  background:rgba(5,6,10,.6);width:36px;height:36px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center}
+
+/* STATS */
+.stats-ribbon{display:grid;grid-template-columns:repeat(6,1fr);
+  border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+  background:var(--bg2);margin:0}
+.stat-cell{padding:32px 20px;text-align:center;border-right:1px solid var(--border);position:relative}
+.stat-cell:last-child{border-right:none}
+.stat-val{font-family:'Clash Display',sans-serif;font-weight:700;font-size:2rem;letter-spacing:-.05em}
+.stat-val .a{color:var(--blue)}
+.stat-lbl{font-size:.7rem;color:var(--text3);letter-spacing:.05em;text-transform:uppercase;margin-top:4px}
+
+/* ══════════════════════════════════════════════
+   LISTINGS PAGE
+══════════════════════════════════════════════ */
+.listings-layout{display:grid;grid-template-columns:300px 1fr 360px;gap:0;min-height:calc(100vh - 72px)}
+
+/* LEFT SIDEBAR - FILTERS */
+.filter-sidebar{background:var(--bg2);border-right:1px solid var(--border);padding:28px 20px;overflow-y:auto;
+  position:sticky;top:72px;height:calc(100vh - 72px);scrollbar-width:thin;scrollbar-color:var(--surface) transparent}
+.fs-title{font-family:'Clash Display',sans-serif;font-weight:700;font-size:1rem;letter-spacing:-.03em;margin-bottom:20px}
+.filter-group{margin-bottom:24px}
+.fg-label{font-family:var(--mono);font-size:.63rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:10px;display:block}
+.filter-chips{display:flex;flex-wrap:wrap;gap:6px}
+.fchip{padding:5px 12px;border:1px solid var(--border);border-radius:8px;
+  font-size:.73rem;font-weight:600;color:var(--text2);cursor:pointer;transition:all .18s;
+  background:transparent;font-family:'Satoshi',sans-serif}
+.fchip:hover{border-color:var(--blue);color:var(--blue)}
+.fchip.on{background:var(--blue);border-color:var(--blue);color:white}
+.price-row{display:flex;gap:8px;align-items:center}
+.price-input{flex:1;height:36px;background:var(--surface);border:1px solid var(--border);
+  border-radius:8px;padding:0 10px;font-family:var(--mono);font-size:.75rem;color:var(--text);
+  outline:none;transition:border-color .2s}
+.price-input:focus{border-color:var(--blue)}
+.price-sep{color:var(--text3);font-size:.75rem}
+.range-slider{width:100%;accent-color:var(--blue);cursor:pointer;margin-top:8px}
+
+/* MAIN RESULTS */
+.results-main{padding:28px 24px;overflow-y:auto}
+.results-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.rh-title{font-family:'Clash Display',sans-serif;font-weight:700;font-size:1.2rem;letter-spacing:-.03em}
+.rh-title span{color:var(--blue)}
+.rh-meta{font-family:var(--mono);font-size:.65rem;color:var(--text3);letter-spacing:.04em}
+
+/* AI STRIP */
+.ai-intel{background:linear-gradient(135deg,var(--surface) 0%,rgba(79,142,247,.05) 100%);
+  border:1px solid rgba(79,142,247,.18);border-radius:var(--radius);padding:16px 20px;
+  margin-bottom:20px;display:flex;gap:14px;align-items:flex-start}
+.ai-dot{width:32px;height:32px;border-radius:10px;background:var(--blue-dim);border:1px solid rgba(79,142,247,.2);
+  display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0}
+.ai-label{font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--blue);margin-bottom:3px}
+.ai-text{font-size:.82rem;color:var(--text2);line-height:1.6}
+.ai-text strong{color:var(--text);font-weight:700}
+
+/* LISTING CARDS */
+.cards-grid{display:flex;flex-direction:column;gap:14px}
+.lcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius2);
+  overflow:hidden;display:grid;grid-template-columns:260px 1fr;cursor:pointer;
+  transition:transform .22s,border-color .22s,box-shadow .22s}
+.lcard:hover{transform:translateY(-3px);border-color:rgba(79,142,247,.3);
+  box-shadow:0 12px 40px rgba(0,0,0,.4),0 0 0 1px var(--blue-dim)}
+.lcard-thumb{position:relative;min-height:190px;overflow:hidden}
+.lcard-thumb img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .4s}
+.lcard:hover .lcard-thumb img{transform:scale(1.05)}
+.lcard-thumb-overlay{position:absolute;inset:0;background:linear-gradient(135deg,rgba(5,6,10,.3) 0%,transparent 60%)}
+.badge-match{position:absolute;bottom:10px;right:10px;
+  font-family:var(--mono);font-size:.65rem;font-weight:500;
+  background:rgba(5,6,10,.85);border:1px solid var(--border2);
+  padding:4px 10px;border-radius:100px;letter-spacing:.04em;
+  display:flex;align-items:center;gap:5px}
+.badge-deal{position:absolute;top:10px;left:10px;font-size:.65rem;font-weight:700;
+  padding:4px 10px;border-radius:100px;letter-spacing:.04em}
+.bdeal{background:rgba(16,185,129,.2);border:1px solid rgba(16,185,129,.4);color:#6ee7b7}
+.bfair{background:rgba(245,158,11,.2);border:1px solid rgba(245,158,11,.4);color:#fcd34d}
+.bover{background:rgba(244,63,94,.2);border:1px solid rgba(244,63,94,.4);color:#fda4af}
+.bchain{position:absolute;top:10px;right:10px;font-size:.65rem;font-weight:700;
+  background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.3);color:#6ee7b7;
+  padding:4px 10px;border-radius:100px;letter-spacing:.03em}
+.lcard-body{padding:18px 22px;display:flex;flex-direction:column;justify-content:space-between}
+.lcard-price{font-family:'Clash Display',sans-serif;font-weight:700;font-size:1.35rem;letter-spacing:-.04em}
+.lcard-price sub{font-size:.65rem;font-weight:400;color:var(--text2);letter-spacing:0}
+.lcard-oracle{font-family:var(--mono);font-size:.62rem;margin-top:3px;letter-spacing:.03em}
+.lcard-title{font-size:.9rem;font-weight:600;color:var(--text);margin-top:4px}
+.lcard-loc{font-size:.75rem;color:var(--text2);display:flex;align-items:center;gap:4px;margin-top:3px}
+.lcard-specs{display:flex;gap:14px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+.spec{font-size:.72rem;color:var(--text2);display:flex;align-items:center;gap:4px;font-weight:500}
+.lcard-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.ltag{font-size:.62rem;font-weight:600;padding:3px 9px;border-radius:6px;
+  background:var(--surface2);border:1px solid var(--border);color:var(--text2)}
+.lcard-footer{display:flex;align-items:center;justify-content:space-between;margin-top:12px}
+.agent-mini{display:flex;align-items:center;gap:8px;cursor:pointer}
+.agent-mini:hover .am-name{color:var(--blue)}
+.am-av{width:30px;height:30px;border-radius:9px;object-fit:cover;border:1px solid var(--border2)}
+.am-name{font-size:.75rem;font-weight:700;transition:color .2s}
+.am-co{font-size:.65rem;color:var(--text2)}
+.am-rating{font-size:.65rem;color:var(--amber)}
+.card-btns{display:flex;gap:6px}
+.cbtn{height:30px;padding:0 13px;border-radius:8px;font-size:.72rem;font-weight:700;
+  cursor:pointer;transition:all .18s;font-family:'Satoshi',sans-serif}
+.cbtn-blue{background:var(--blue);border:none;color:white}
+.cbtn-blue:hover{background:#3a7ef0}
+.cbtn-ghost{background:transparent;border:1px solid var(--border);color:var(--text2)}
+.cbtn-ghost:hover{border-color:var(--border3);color:var(--text)}
+
+/* RIGHT - NESTI */
+.nesti-col{background:var(--bg2);border-left:1px solid var(--border);
+  position:sticky;top:72px;height:calc(100vh - 72px);display:flex;flex-direction:column}
+.nesti-head{padding:18px 18px 16px;border-bottom:1px solid var(--border);flex-shrink:0;
+  display:flex;align-items:center;gap:12px}
+.nesti-av{width:38px;height:38px;border-radius:12px;
+  background:linear-gradient(135deg,var(--blue),var(--cyan));
+  display:flex;align-items:center;justify-content:center;font-size:1rem;
+  box-shadow:0 0 16px var(--blue-glow)}
+.nesti-name{font-family:'Clash Display',sans-serif;font-weight:700;font-size:.9rem;letter-spacing:-.02em}
+.nesti-online{font-size:.65rem;color:var(--emerald);display:flex;align-items:center;gap:4px}
+.nesti-online::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--emerald);animation:pulse 2s infinite}
+.nesti-msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;
+  scrollbar-width:thin;scrollbar-color:var(--surface) transparent}
+.nmsg{display:flex;gap:8px;animation:up .3s ease both}
+.nmsg.user{flex-direction:row-reverse}
+.nmsg-av{width:26px;height:26px;border-radius:8px;flex-shrink:0;margin-top:2px;
+  display:flex;align-items:center;justify-content:center;font-size:.75rem;background:var(--surface2)}
+.nmsg.nesti .nmsg-av{background:linear-gradient(135deg,var(--blue),var(--cyan))}
+.nmsg-bubble{max-width:220px;padding:9px 13px;border-radius:13px;font-size:.78rem;line-height:1.6}
+.nmsg.nesti .nmsg-bubble{background:var(--surface2);color:var(--text2);border-bottom-left-radius:3px}
+.nmsg.user .nmsg-bubble{background:var(--blue);color:white;border-bottom-right-radius:3px}
+.nmsg-bubble strong{color:var(--blue)}
+.nmsg.user .nmsg-bubble strong{color:#bfdbfe}
+.nesti-input-row{padding:12px;border-top:1px solid var(--border);flex-shrink:0;display:flex;gap:8px}
+.nesti-inp{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;
+  padding:9px 13px;font-family:'Satoshi',sans-serif;font-size:.8rem;color:var(--text);
+  outline:none;transition:border-color .2s}
+.nesti-inp:focus{border-color:rgba(79,142,247,.5)}
+.nesti-inp::placeholder{color:var(--text3)}
+.nesti-send{width:36px;height:36px;background:var(--blue);border:none;border-radius:10px;
+  cursor:pointer;font-size:.85rem;transition:all .2s;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.nesti-send:hover{background:#3a7ef0}
+
+/* INTEL CARDS below chat */
+.intel-strip{padding:12px;border-top:1px solid var(--border);flex-shrink:0}
+.intel-row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.intel-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px}
+.ib-label{font-family:var(--mono);font-size:.58rem;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:6px}
+.ib-val{font-family:'Clash Display',sans-serif;font-weight:700;font-size:1.1rem;letter-spacing:-.04em}
+.ib-sub{font-size:.65rem;color:var(--text2);margin-top:2px}
+.ib-trend{font-size:.65rem;font-weight:700;margin-top:4px}
+.up{color:var(--emerald)}.dn{color:var(--rose)}
+
+/* ══════════════════════════════════════════════
+   AGENTS PAGE
+══════════════════════════════════════════════ */
+.page-wrap{max-width:1400px;margin:0 auto;padding:60px 60px}
+.agents-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-top:40px}
+.agent-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius2);
+  padding:28px;cursor:pointer;transition:all .22s}
+.agent-card:hover{border-color:rgba(79,142,247,.3);transform:translateY(-4px);
+  box-shadow:0 16px 40px rgba(0,0,0,.3)}
+.ac-photo{width:72px;height:72px;border-radius:18px;object-fit:cover;border:2px solid var(--border2);margin-bottom:16px}
+.ac-vbadge{display:inline-flex;align-items:center;gap:4px;font-size:.62rem;font-weight:700;
+  padding:3px 9px;border-radius:100px;background:var(--emerald-dim);
+  border:1px solid rgba(16,185,129,.25);color:#6ee7b7;margin-bottom:10px}
+.ac-name{font-family:'Clash Display',sans-serif;font-weight:700;font-size:1.05rem;letter-spacing:-.03em}
+.ac-role{font-size:.75rem;color:var(--text2);margin-top:2px;font-weight:500}
+.ac-co{font-size:.72rem;color:var(--blue);margin-top:1px;font-weight:600}
+.ac-location{font-size:.72rem;color:var(--text3);margin-top:6px;display:flex;align-items:center;gap:4px}
+.ac-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:16px;padding-top:16px;border-top:1px solid var(--border)}
+.ac-stat-val{font-family:'Clash Display',sans-serif;font-weight:700;font-size:1.1rem;letter-spacing:-.04em}
+.ac-stat-lbl{font-size:.62rem;color:var(--text3)}
+.ac-langs{display:flex;gap:5px;flex-wrap:wrap;margin-top:12px}
+.lang-tag{font-size:.6rem;font-weight:700;padding:2px 7px;border-radius:5px;
+  background:var(--surface2);border:1px solid var(--border);color:var(--text2)}
+.ac-cta{width:100%;margin-top:14px;height:36px;background:var(--blue);border:none;border-radius:10px;
+  font-family:'Satoshi',sans-serif;font-size:.78rem;font-weight:700;color:white;
+  cursor:pointer;transition:all .2s}
+.ac-cta:hover{background:#3a7ef0}
+
+/* ══════════════════════════════════════════════
+   COMPANIES PAGE
+══════════════════════════════════════════════ */
+.companies-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:40px}
+.company-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius2);
+  padding:28px;cursor:pointer;transition:all .22s;position:relative;overflow:hidden}
+.company-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,var(--blue),var(--cyan));opacity:0;transition:opacity .3s}
+.company-card:hover::before{opacity:1}
+.company-card:hover{border-color:rgba(79,142,247,.25);transform:translateY(-4px)}
+.cc-logo{width:56px;height:56px;border-radius:14px;object-fit:cover;border:1px solid var(--border2);margin-bottom:14px}
+.cc-verified{display:inline-flex;align-items:center;gap:4px;font-size:.6rem;font-weight:700;
+  padding:3px 9px;border-radius:100px;background:var(--blue-dim);border:1px solid rgba(79,142,247,.25);
+  color:var(--blue);margin-bottom:10px}
+.cc-name{font-family:'Clash Display',sans-serif;font-weight:700;font-size:1.1rem;letter-spacing:-.04em}
+.cc-type{font-size:.72rem;color:var(--text2);margin-top:2px;font-weight:500}
+.cc-desc{font-size:.78rem;color:var(--text2);line-height:1.6;margin-top:10px}
+.cc-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:16px;padding-top:16px;border-top:1px solid var(--border)}
+.cc-s-val{font-family:'Clash Display',sans-serif;font-weight:700;font-size:1rem;letter-spacing:-.04em}
+.cc-s-lbl{font-size:.6rem;color:var(--text3)}
+.cc-countries{display:flex;gap:5px;flex-wrap:wrap;margin-top:10px}
+.ctry-tag{font-size:.6rem;font-weight:600;padding:2px 7px;border-radius:5px;
+  background:var(--surface2);border:1px solid var(--border);color:var(--text2)}
+
+/* ══════════════════════════════════════════════
+   BLUEPRINT PAGE
+══════════════════════════════════════════════ */
+.blueprint-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:40px}
+.bp-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius2);padding:28px}
+.bp-icon{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;margin-bottom:18px}
+.bp-title{font-family:'Clash Display',sans-serif;font-weight:700;font-size:1.1rem;letter-spacing:-.03em;margin-bottom:10px}
+.bp-desc{font-size:.82rem;color:var(--text2);line-height:1.7}
+.bp-tech{margin-top:14px;padding-top:14px;border-top:1px solid var(--border);font-family:var(--mono);font-size:.62rem;color:var(--text3);letter-spacing:.03em}
+.bp-tech span{color:var(--cyan)}
+.revenue-table{width:100%;border-collapse:collapse;margin-top:20px}
+.revenue-table th{text-align:left;font-family:var(--mono);font-size:.62rem;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--text3);padding:8px 12px;border-bottom:1px solid var(--border)}
+.revenue-table td{padding:10px 12px;border-bottom:1px solid var(--border);font-size:.82rem;color:var(--text2)}
+.revenue-table td:first-child{font-weight:700;color:var(--text)}
+.revenue-table td.green{color:var(--emerald);font-weight:700;font-family:var(--mono)}
+.revenue-table tr:last-child td{border-bottom:none;color:var(--blue);font-weight:700}
+.moat-list{list-style:none;margin-top:14px;display:flex;flex-direction:column;gap:10px}
+.moat-item{display:flex;gap:10px;align-items:flex-start}
+.moat-num{width:24px;height:24px;border-radius:7px;background:var(--blue-dim);border:1px solid rgba(79,142,247,.2);
+  display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;color:var(--blue);flex-shrink:0;margin-top:1px}
+.moat-text{font-size:.8rem;color:var(--text2);line-height:1.6}
+.moat-text strong{color:var(--text)}
+.arch-diagram{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);
+  padding:20px;margin-top:14px;font-family:var(--mono);font-size:.68rem;color:var(--cyan);
+  line-height:1.9;white-space:pre}
+
+/* ══════════════════════════════════════════════
+   ANIMATIONS
+══════════════════════════════════════════════ */
+@keyframes up{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+
+/* ══════════════════════════════════════════════
+   MODAL INTERNALS
+══════════════════════════════════════════════ */
+.mod-close{position:absolute;top:20px;right:20px;width:34px;height:34px;
+  background:var(--surface2);border:1px solid var(--border);border-radius:9px;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  font-size:1rem;color:var(--text2);transition:all .2s}
+.mod-close:hover{background:var(--surface3);color:var(--text)}
+.mod-img{width:100%;height:260px;border-radius:16px;object-fit:cover;margin-bottom:22px}
+.mod-specs{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin:18px 0}
+.mod-spec{background:var(--surface2);border-radius:10px;padding:12px;text-align:center}
+.mod-spec-icon{font-size:1.1rem;display:block;margin-bottom:5px}
+.mod-spec-val{font-weight:800;font-size:.9rem;font-family:'Clash Display',sans-serif}
+.mod-spec-lbl{font-size:.6rem;color:var(--text3)}
+.mod-ctas{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:20px}
+.mcta{height:44px;border-radius:10px;font-family:'Satoshi',sans-serif;font-weight:700;font-size:.82rem;cursor:pointer;transition:all .2s;border:none}
+.mcta-blue{background:var(--blue);color:white}
+.mcta-blue:hover{background:#3a7ef0}
+.mcta-ghost{background:transparent;border:1px solid var(--border2)!important;color:var(--text2)}
+.mcta-ghost:hover{border-color:var(--border3)!important;color:var(--text)}
+.mod-amenities{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+.mam{font-size:.72rem;font-weight:600;padding:4px 11px;border-radius:7px;
+  background:var(--surface2);border:1px solid var(--border);color:var(--text2)}
+
+/* responsive */
+@media(max-width:1200px){
+  .cities-grid{grid-template-columns:repeat(3,1fr)}
+  .listings-layout{grid-template-columns:260px 1fr 320px}
+}
+@media(max-width:1024px){
+  nav{padding:16px 24px}
+  .listings-layout{grid-template-columns:1fr}
+  .filter-sidebar,.nesti-col{display:none}
+  .cities-grid{grid-template-columns:repeat(2,1fr)}
+  .agents-grid{grid-template-columns:repeat(2,1fr)}
+  .companies-grid{grid-template-columns:1fr 1fr}
+  .blueprint-grid{grid-template-columns:1fr}
+  .page-wrap{padding:40px 20px}
+}
+@media(max-width:768px){
+  .cities-grid{grid-template-columns:1fr}
+  .agents-grid{grid-template-columns:1fr}
+  .companies-grid{grid-template-columns:1fr}
+  .stats-ribbon{grid-template-columns:repeat(2,1fr)}
+  .lcard{grid-template-columns:1fr}
+  nav .nav-links{display:none}
+}
+</style>
+</head>
+<body>
+<div id="CUR"></div><div id="RING"></div>
+<div id="LDR">
+  <div class="ldr-logo">NEST<span>IQ</span></div>
+  <div class="ldr-bar"><div class="ldr-fill"></div></div>
+  <div class="ldr-txt" id="ldrTxt">Initialising AI Engine...</div>
+</div>
+<div id="TOAST"></div>
+<div id="MOD" onclick="if(event.target===this)closeMod()"><div class="mod-box" id="MODBOX" style="position:relative"></div></div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">NEST<span>IQ</span></div>
+  <ul class="nav-links">
+    <li><a href="#" onclick="goPage('home')">Home</a></li>
+    <li><a href="#" onclick="goPage('listings')">Listings</a></li>
+    <li><a href="#" onclick="goPage('agents')">Agents</a></li>
+    <li><a href="#" onclick="goPage('companies')">Companies</a></li>
+    <li><a href="#" onclick="goPage('blueprint')">Blueprint</a></li>
+  </ul>
+  <div class="nav-right">
+    <div class="nav-page-btns">
+      <button class="npb active" onclick="goPage('home')">🏠 Home</button>
+      <button class="npb" onclick="goPage('listings')">🔍 Listings</button>
+      <button class="npb" onclick="goPage('agents')">👔 Agents</button>
+      <button class="npb" onclick="goPage('companies')">🏢 Companies</button>
+      <button class="npb" onclick="goPage('blueprint')">📋 Blueprint</button>
+    </div>
+    <button class="nbtn nbtn-ghost" onclick="showToast('🔐 Agent login portal — launching Q3 2026!')">Login</button>
+    <button class="nbtn nbtn-solid" onclick="showToast('🚀 Added to Series A waitlist!')">Invest</button>
+  </div>
+</nav>
+
+<!-- ══ HOME PAGE ══ -->
+<div class="page active" id="page-home">
+  <section class="hero">
+    <div class="hero-mesh"></div><div class="hero-grid"></div>
+    <div class="hero-eyebrow">✦ Series A Ready · $54B Market · AI-Native · 40+ Countries</div>
+    <h1>The Global <span class="grad">AI Ecosystem</span><br>for Human Living Spaces</h1>
+    <p class="hero-sub">NESTIQ is not a property portal. It's an autonomous AI Market Maker — connecting millions of users, 4,200+ verified agents, and 180+ companies across 40 countries using intelligence no competitor has.</p>
+
+    <div class="search-wrap">
+      <div class="search-box">
+        <span class="search-icon">⌘</span>
+        <input class="search-input" id="heroSearch" placeholder="Describe your perfect home in any language...">
+        <select class="city-select" id="cityFilter">
+          <option value="all">🌍 All Cities</option>
+          <option value="New York">🗽 New York, USA</option>
+          <option value="London">🇬🇧 London, UK</option>
+          <option value="Dubai">🇦🇪 Dubai, UAE</option>
+          <option value="Istanbul">🇹🇷 Istanbul, Turkey</option>
+          <option value="Karachi">🇵🇰 Karachi, Pakistan</option>
+          <option value="Lahore">🇵🇰 Lahore, Pakistan</option>
+          <option value="Tokyo">🇯🇵 Tokyo, Japan</option>
+          <option value="Paris">🇫🇷 Paris, France</option>
+        </select>
+        <button class="search-btn" onclick="doSearch()"><span>✦</span> AI Search</button>
+      </div>
+      <div class="ai-hint">// Powered by NESTIQ NLP · Understands English, Urdu, Arabic, Turkish, French</div>
+      <div class="sample-queries">
+        <button class="sq" onclick="setQ(this)">Freelancer studio, fast WiFi, coffee nearby, under $900 Dubai</button>
+        <button class="sq" onclick="setQ(this)">Family 3BR near school, parking, safe area London under £3500</button>
+        <button class="sq" onclick="setQ(this)">Furnished 2BR sea view Istanbul under $1200 per month</button>
+        <button class="sq" onclick="setQ(this)">Luxury penthouse NYC Manhattan under $8000</button>
+        <button class="sq" onclick="setQ(this)">2 kamron ka ghar Karachi 40 hazaar PKR mein parking ke saath</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <div class="stats-ribbon">
+    <div class="stat-cell"><div class="stat-val">$<span class="a">54</span>B</div><div class="stat-lbl">Market Size 2026</div></div>
+    <div class="stat-cell"><div class="stat-val"><span class="a">24</span>K+</div><div class="stat-lbl">Verified Listings</div></div>
+    <div class="stat-cell"><div class="stat-val"><span class="a">4.2</span>K</div><div class="stat-lbl">Active Agents</div></div>
+    <div class="stat-cell"><div class="stat-val"><span class="a">180</span>+</div><div class="stat-lbl">Partner Companies</div></div>
+    <div class="stat-cell"><div class="stat-val"><span class="a">40</span>+</div><div class="stat-lbl">Countries</div></div>
+    <div class="stat-cell"><div class="stat-val"><span class="a">92</span>%</div><div class="stat-lbl">Match Accuracy</div></div>
+  </div>
+
+  <!-- CITIES -->
+  <div class="cities-section">
+    <div class="sec-label">// Global Coverage · 40+ Countries</div>
+    <div class="sec-title">Browse by <span class="g">City</span></div>
+    <div class="cities-grid" id="citiesGrid"></div>
+  </div>
+</div>
+
+<!-- ══ LISTINGS PAGE ══ -->
+<div class="page" id="page-listings">
+  <div class="listings-layout">
+    <!-- FILTER SIDEBAR -->
+    <div class="filter-sidebar">
+      <div class="fs-title">Filters</div>
+      <div class="filter-group">
+        <span class="fg-label">Transaction</span>
+        <div class="filter-chips">
+          <button class="fchip on" onclick="toggleF(this,'type','rent')">Rent</button>
+          <button class="fchip" onclick="toggleF(this,'type','buy')">Buy</button>
+          <button class="fchip" onclick="toggleF(this,'type','short')">Short Stay</button>
+        </div>
+      </div>
+      <div class="filter-group">
+        <span class="fg-label">City</span>
+        <div class="filter-chips" id="cityChips"></div>
+      </div>
+      <div class="filter-group">
+        <span class="fg-label">Property Type</span>
+        <div class="filter-chips">
+          <button class="fchip on" onclick="toggleF(this,'ptype','all')">All</button>
+          <button class="fchip" onclick="toggleF(this,'ptype','apt')">Apartment</button>
+          <button class="fchip" onclick="toggleF(this,'ptype','villa')">Villa</button>
+          <button class="fchip" onclick="toggleF(this,'ptype','studio')">Studio</button>
+          <button class="fchip" onclick="toggleF(this,'ptype','penthouse')">Penthouse</button>
+          <button class="fchip" onclick="toggleF(this,'ptype','office')">Office</button>
+        </div>
+      </div>
+      <div class="filter-group">
+        <span class="fg-label">Bedrooms</span>
+        <div class="filter-chips">
+          <button class="fchip" onclick="toggleF(this,'beds','studio')">Studio</button>
+          <button class="fchip" onclick="toggleF(this,'beds','1')">1 BR</button>
+          <button class="fchip" onclick="toggleF(this,'beds','2')">2 BR</button>
+          <button class="fchip" onclick="toggleF(this,'beds','3')">3 BR</button>
+          <button class="fchip" onclick="toggleF(this,'beds','4+')">4+ BR</button>
+        </div>
+      </div>
+      <div class="filter-group">
+        <span class="fg-label">Amenities</span>
+        <div class="filter-chips">
+          <button class="fchip" onclick="toggleF(this,'am','parking')">🚗 Parking</button>
+          <button class="fchip" onclick="toggleF(this,'am','gym')">💪 Gym</button>
+          <button class="fchip" onclick="toggleF(this,'am','pool')">🏊 Pool</button>
+          <button class="fchip" onclick="toggleF(this,'am','furnished')">🛋 Furnished</button>
+          <button class="fchip" onclick="toggleF(this,'am','wifi')">📶 WiFi</button>
+          <button class="fchip" onclick="toggleF(this,'am','school')">🏫 Near School</button>
+          <button class="fchip" onclick="toggleF(this,'am','security')">🔒 24/7 Security</button>
+          <button class="fchip" onclick="toggleF(this,'am','sea')">🌊 Sea View</button>
+        </div>
+      </div>
+      <div class="filter-group">
+        <span class="fg-label">Trust</span>
+        <div class="filter-chips">
+          <button class="fchip" onclick="toggleF(this,'trust','verified')">⛓ Blockchain Verified</button>
+          <button class="fchip" onclick="toggleF(this,'trust','deal')">✦ Great Deal</button>
+          <button class="fchip" onclick="toggleF(this,'trust','topagent')">⭐ Top Agent Only</button>
+        </div>
+      </div>
+      <div class="filter-group">
+        <span class="fg-label">Sort By</span>
+        <div class="filter-chips">
+          <button class="fchip on" onclick="sortCards('match',this)">✦ AI Match</button>
+          <button class="fchip" onclick="sortCards('price_asc',this)">Price ↑</button>
+          <button class="fchip" onclick="sortCards('price_desc',this)">Price ↓</button>
+          <button class="fchip" onclick="sortCards('newest',this)">Newest</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESULTS -->
+    <div class="results-main">
+      <div class="results-header">
+        <div class="rh-title">AI-Ranked <span>Results</span></div>
+        <div class="rh-meta" id="rMeta">// loading...</div>
+      </div>
+      <div class="ai-intel">
+        <div class="ai-dot">✦</div>
+        <div>
+          <div class="ai-label">NESTIQ Intelligence · Live Market Scan</div>
+          <div class="ai-text" id="aiIntelTxt">Scanning verified listings across 40+ cities... Fair-Price Oracle calibrating...</div>
+        </div>
+      </div>
+      <div class="filter-chips" style="margin-bottom:16px" id="quickFilters">
+        <button class="fchip on" onclick="quickFilter('all',this)">All</button>
+        <button class="fchip" onclick="quickFilter('deal',this)">✦ Great Deals</button>
+        <button class="fchip" onclick="quickFilter('verified',this)">⛓ Verified Only</button>
+        <button class="fchip" onclick="quickFilter('new_york',this)">🗽 New York</button>
+        <button class="fchip" onclick="quickFilter('london',this)">🇬🇧 London</button>
+        <button class="fchip" onclick="quickFilter('dubai',this)">🇦🇪 Dubai</button>
+        <button class="fchip" onclick="quickFilter('istanbul',this)">🇹🇷 Istanbul</button>
+        <button class="fchip" onclick="quickFilter('pakistan',this)">🇵🇰 Pakistan</button>
+      </div>
+      <div class="cards-grid" id="cardsGrid"></div>
+    </div>
+
+    <!-- NESTI SIDEBAR -->
+    <div class="nesti-col">
+      <div class="nesti-head">
+        <div class="nesti-av">✦</div>
+        <div>
+          <div class="nesti-name">Nesti AI Advisor</div>
+          <div class="nesti-online">Online · Analysing market</div>
+        </div>
+      </div>
+      <div class="nesti-msgs" id="nestiMsgs"></div>
+      <div class="intel-strip">
+        <div class="intel-row2">
+          <div class="intel-box">
+            <div class="ib-label">Avg Rent NYC</div>
+            <div class="ib-val">$3,850</div>
+            <div class="ib-sub">2BR Manhattan</div>
+            <div class="ib-trend up">↑ 3.2% MoM</div>
+          </div>
+          <div class="intel-box">
+            <div class="ib-label">Avg Rent Dubai</div>
+            <div class="ib-val">$2,100</div>
+            <div class="ib-sub">2BR Downtown</div>
+            <div class="ib-trend dn">↓ 1.1% MoM</div>
+          </div>
+          <div class="intel-box">
+            <div class="ib-label">Fraud Blocked</div>
+            <div class="ib-val" style="color:var(--rose)">41</div>
+            <div class="ib-sub">Today · AI Shield</div>
+            <div class="ib-trend up">99.2% accuracy</div>
+          </div>
+          <div class="intel-box">
+            <div class="ib-label">Verified Today</div>
+            <div class="ib-val" style="color:var(--emerald)">1,312</div>
+            <div class="ib-sub">Blockchain ⛓</div>
+            <div class="ib-trend up">↑ Live</div>
+          </div>
+        </div>
+      </div>
+      <div class="nesti-input-row">
+        <input class="nesti-inp" id="nestiInp" placeholder="Ask Nesti anything..." onkeydown="if(event.key==='Enter')sendNesti()">
+        <button class="nesti-send" onclick="sendNesti()">➤</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ AGENTS PAGE ══ -->
+<div class="page" id="page-agents">
+  <div class="page-wrap">
+    <div class="sec-label">// 4,200+ Verified Professionals Worldwide</div>
+    <div class="sec-title">Our <span class="g">Agent Network</span></div>
+    <p style="font-size:.9rem;color:var(--text2);margin-top:10px;max-width:600px">Every agent is KYC verified, background-checked, and performance-rated. AI AutoPilot sends them only pre-qualified leads — zero cold calls, 100% conversion-ready buyers.</p>
+    <div class="agents-grid" id="agentsGrid"></div>
+  </div>
+</div>
+
+<!-- ══ COMPANIES PAGE ══ -->
+<div class="page" id="page-companies">
+  <div class="page-wrap">
+    <div class="sec-label">// 180+ Partner Companies · Enterprise Verified</div>
+    <div class="sec-title">Real Estate <span class="g">Companies</span></div>
+    <p style="font-size:.9rem;color:var(--text2);margin-top:10px;max-width:600px">From boutique agencies to global developers — NESTIQ's company ecosystem covers every segment. All companies are enterprise-verified with full KYB (Know Your Business) compliance.</p>
+    <div class="companies-grid" id="companiesGrid"></div>
+  </div>
+</div>
+
+<!-- ══ BLUEPRINT PAGE ══ -->
+<div class="page" id="page-blueprint">
+  <div class="page-wrap">
+    <div class="sec-label">// Full Business Blueprint · Investor Grade · Series A</div>
+    <div class="sec-title">NESTIQ <span class="g">Ecosystem Blueprint</span></div>
+    <p style="font-size:.9rem;color:var(--text2);margin-top:10px;max-width:700px">Complete technical, financial, and strategic documentation for the NESTIQ AI Real Estate Ecosystem. Built for investors, partners, and co-founders.</p>
+
+    <div class="blueprint-grid">
+
+      <div class="bp-card">
+        <div class="bp-icon" style="background:var(--blue-dim);border:1px solid rgba(79,142,247,.2)">🧠</div>
+        <div class="bp-title">AI Engine Architecture</div>
+        <div class="bp-desc">NESTIQ's AI stack processes 50+ data signals per listing. The NLP layer understands lifestyle descriptions, not just specs. Computer Vision analyses window orientation, room quality, and photo authenticity simultaneously.</div>
+        <div class="arch-diagram">USER QUERY (Natural Language)
+    ↓ [NLP Parser · BERT-Large]
+INTENT EXTRACTION
+  ├─ Budget Range
+  ├─ Location + Radius
+  ├─ Lifestyle Tags
+  └─ Implicit Preferences
+    ↓ [Matching Engine · XGBoost]
+LISTING SCORE (0-100%)
+  ├─ Budget Fit        (35%)
+  ├─ Location Score    (25%)
+  ├─ Feature Match     (25%)
+  └─ Agent Trust Score (15%)
+    ↓ [Ranking + Output]
+TOP-5 AI-RANKED RESULTS</div>
+        <div class="bp-tech">Stack: <span>BERT-Large · XGBoost · ResNet-50 · GPT-4o · FastAPI</span></div>
+      </div>
+
+      <div class="bp-card">
+        <div class="bp-icon" style="background:var(--emerald-dim);border:1px solid rgba(16,185,129,.2)">⛓</div>
+        <div class="bp-title">Blockchain Trust Layer</div>
+        <div class="bp-desc">Every verified property title is hashed and stored on Ethereum L2 (Polygon). Cross-referenced with national land registries in 12 countries. The verification is cryptographically permanent — impossible to forge, alter, or delete.</div>
+        <ul class="moat-list">
+          <li class="moat-item"><div class="moat-num">1</div><div class="moat-text"><strong>Document Upload</strong> — Agent submits title deeds, ownership proof</div></li>
+          <li class="moat-item"><div class="moat-num">2</div><div class="moat-text"><strong>Registry Cross-Check</strong> — AI verifies against national land database</div></li>
+          <li class="moat-item"><div class="moat-num">3</div><div class="moat-text"><strong>Cryptographic Hash</strong> — Unique fingerprint stored on blockchain forever</div></li>
+          <li class="moat-item"><div class="moat-num">4</div><div class="moat-text"><strong>⛓ Badge Awarded</strong> — Mathematically impossible to fake</div></li>
+        </ul>
+        <div class="bp-tech">Stack: <span>Ethereum L2 (Polygon) · IPFS · ZK-SNARK Proofs</span></div>
+      </div>
+
+      <div class="bp-card">
+        <div class="bp-icon" style="background:var(--amber-dim);border:1px solid rgba(245,158,11,.2)">💰</div>
+        <div class="bp-title">Revenue Model · Annual Projections</div>
+        <div class="bp-desc">4 compounding revenue streams with diversified risk. Conservative projections based on 0.5% market penetration in Year 3.</div>
+        <table class="revenue-table">
+          <thead><tr><th>Stream</th><th>Year 1</th><th>Year 2</th><th>Year 3</th></tr></thead>
+          <tbody>
+            <tr><td>Agent SaaS ($49–199/mo)</td><td class="green">$294K</td><td class="green">$1.76M</td><td class="green">$7.05M</td></tr>
+            <tr><td>Transaction Escrow (0.5%)</td><td class="green">$18K</td><td class="green">$95K</td><td class="green">$480K</td></tr>
+            <tr><td>Market Data API (B2B)</td><td class="green">$48K</td><td class="green">$240K</td><td class="green">$960K</td></tr>
+            <tr><td>Smart Match Ads</td><td class="green">$78K</td><td class="green">$340K</td><td class="green">$1.3M</td></tr>
+            <tr><td style="color:var(--blue);font-size:.9rem">TOTAL ARR</td><td style="color:var(--blue);font-weight:900">$438K</td><td style="color:var(--blue);font-weight:900">$2.4M</td><td style="color:var(--blue);font-weight:900">$9.8M</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="bp-card">
+        <div class="bp-icon" style="background:var(--violet-dim);border:1px solid rgba(139,92,246,.2)">🏰</div>
+        <div class="bp-title">5 Competitive Moats</div>
+        <div class="bp-desc">Why competitors cannot replicate NESTIQ within 3 years even with unlimited capital:</div>
+        <ul class="moat-list">
+          <li class="moat-item"><div class="moat-num">1</div><div class="moat-text"><strong>Data Flywheel</strong> — Every search trains our model. After 100K users, accuracy gap is insurmountable.</div></li>
+          <li class="moat-item"><div class="moat-num">2</div><div class="moat-text"><strong>Blockchain Relationships</strong> — 12–18 months of legal work per country to integrate land registries. We are doing it now.</div></li>
+          <li class="moat-item"><div class="moat-num">3</div><div class="moat-text"><strong>Cultural NLP</strong> — South Asian & MENA language training cannot be replicated by Western competitors quickly.</div></li>
+          <li class="moat-item"><div class="moat-num">4</div><div class="moat-text"><strong>Network Effect</strong> — More agents → more listings → more users → smarter AI. Self-reinforcing flywheel.</div></li>
+          <li class="moat-item"><div class="moat-num">5</div><div class="moat-text"><strong>Emerging Market First-Mover</strong> — Pakistan, Egypt, Nigeria, Bangladesh underserved by all competitors. We own these markets.</div></li>
+        </ul>
+      </div>
+
+      <div class="bp-card" style="grid-column:1/-1">
+        <div class="bp-icon" style="background:var(--cyan-dim);border:1px solid rgba(34,211,238,.2)">🌍</div>
+        <div class="bp-title">Go-To-Market Strategy · 4 Phases</div>
+        <div class="arch-diagram">PHASE 1 (0-6 months)  ·  Pakistan Launch
+  ├─ Lahore, Karachi, Islamabad
+  ├─ 500 agents FREE onboarding
+  ├─ 2,000 verified listings
+  └─ Target: $438K ARR
+
+PHASE 2 (6-18 months)  ·  Gulf Expansion  
+  ├─ Dubai, Abu Dhabi, Riyadh
+  ├─ Pakistani diaspora = 3M potential users
+  ├─ Enterprise deals with Gulf developers
+  └─ Target: $2.4M ARR
+
+PHASE 3 (18-36 months)  ·  Europe + Southeast Asia
+  ├─ London, Istanbul, Kuala Lumpur
+  ├─ Series A fundraise ($5-10M)
+  ├─ White-label API to local portals
+  └─ Target: $9.8M ARR
+
+PHASE 4 (36+ months)  ·  Global Dominance
+  ├─ 40+ countries, 500K+ listings
+  ├─ Compete with Zillow, Rightmove, Bayut
+  ├─ IPO preparation
+  └─ Target: $100M+ ARR</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════
+// CURSOR
+// ═══════════════════════════════════════
+const C=document.getElementById('CUR'),R=document.getElementById('RING');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;C.style.left=mx+'px';C.style.top=my+'px'});
+(function ra(){rx+=(mx-rx)*.12;ry+=(my-ry)*.12;R.style.left=rx+'px';R.style.top=ry+'px';requestAnimationFrame(ra)})();
+document.addEventListener('mouseover',e=>{if(e.target.closest('button,a,[onclick],.lcard,.city-card,.agent-card,.company-card,.sq,.fchip,.npb'))document.body.classList.add('hov');else document.body.classList.remove('hov')});
+
+// ═══════════════════════════════════════
+// LOADER
+// ═══════════════════════════════════════
+const msgs=['Initialising AI Engine...','Loading 24K+ listings...','Verifying blockchain titles...','Calibrating Fair-Price Oracle...','✦ NESTIQ Ready'];
+let mi=0;
+const ltxt=document.getElementById('ldrTxt');
+const li=setInterval(()=>{mi++;if(mi<msgs.length){ltxt.textContent=msgs[mi];}else clearInterval(li);},420);
+setTimeout(()=>{document.getElementById('LDR').classList.add('gone');initAll();},2200);
+
+// ═══════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════
+const CITIES=[
+  {name:'New York',country:'USA',flag:'🗽',count:'3,240 listings',img:'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=400&q=80',key:'new_york'},
+  {name:'London',country:'United Kingdom',flag:'🇬🇧',count:'2,810 listings',img:'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=400&q=80',key:'london'},
+  {name:'Dubai',country:'UAE',flag:'🇦🇪',count:'4,120 listings',img:'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=400&q=80',key:'dubai'},
+  {name:'Istanbul',country:'Turkey',flag:'🇹🇷',count:'1,890 listings',img:'https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?w=400&q=80',key:'istanbul'},
+  {name:'Karachi',country:'Pakistan',flag:'🇵🇰',count:'2,340 listings',img:'https://images.unsplash.com/photo-1596422846543-75c6fc197f07?w=400&q=80',key:'pakistan'},
+];
+
+const AGENTS_DATA=[
+  {name:'James Whitfield',role:'Senior Luxury Broker',company:'Sotheby\'s Int\'l Realty',city:'New York, USA',photo:'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&q=80',rating:4.9,deals:380,listings:48,years:12,langs:['English','Spanish'],verified:true,speciality:'Luxury Condos'},
+  {name:'Amelia Thornton',role:'Residential Director',company:'Knight Frank London',city:'London, UK',photo:'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&q=80',rating:4.8,deals:295,listings:36,years:9,langs:['English','French'],verified:true,speciality:'Prime Central London'},
+  {name:'Khalid Al-Rashidi',role:'Commercial & Residential',company:'DAMAC Properties',city:'Dubai, UAE',photo:'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80',rating:4.9,deals:512,listings:74,years:15,langs:['Arabic','English','Urdu'],verified:true,speciality:'Downtown Dubai'},
+  {name:'Elif Şahin',role:'Property Consultant',company:'Remax Turkey',city:'Istanbul, Turkey',photo:'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&q=80',rating:4.7,deals:187,listings:29,years:7,langs:['Turkish','English','German'],verified:true,speciality:'Bosphorus View'},
+  {name:'Ahmed Raza Khan',role:'Senior Agent & Valuation',company:'Prime Properties PKR',city:'Lahore, Pakistan',photo:'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&q=80',rating:4.9,deals:420,listings:65,years:11,langs:['Urdu','English','Punjabi'],verified:true,speciality:'DHA & Bahria Town'},
+  {name:'Yuki Tanaka',role:'International Relocation',company:'Mitsui Fudosan',city:'Tokyo, Japan',photo:'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=200&q=80',rating:4.8,deals:231,listings:41,years:8,langs:['Japanese','English','Mandarin'],verified:true,speciality:'Expat Relocation'},
+  {name:'Sophie Moreau',role:'Luxury Portfolio Manager',company:'BNP Paribas Real Estate',city:'Paris, France',photo:'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&q=80',rating:4.7,deals:168,listings:23,years:6,langs:['French','English','Italian'],verified:true,speciality:'Haussmann Buildings'},
+  {name:'Sara Malik',role:'Tech & Startup Relocation',company:'CityNest Realty',city:'Karachi, Pakistan',photo:'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&q=80',rating:4.8,deals:198,listings:38,years:7,langs:['Urdu','English','Sindhi'],verified:true,speciality:'DHA Karachi'},
+];
+
+const COMPANIES_DATA=[
+  {name:'Emaar Properties',type:'Developer · Enterprise',city:'Dubai, UAE',logo:'https://images.unsplash.com/photo-1486325212027-8081e485255e?w=200&q=80',desc:'One of the world\'s largest real estate developers. Responsible for iconic projects including Burj Khalifa District, Downtown Dubai, and 70+ global communities.',agents:240,listings:1820,countries:36,deals:15000,verified:true,since:1997},
+  {name:'Knight Frank Global',type:'Agency · Enterprise',city:'London, UK',logo:'https://images.unsplash.com/photo-1486325212027-8081e485255e?w=200&q=80',desc:'Independent global property consultancy established in London. Operates 384 offices across 51 territories with deep expertise in prime and super-prime residential markets.',agents:185,listings:940,countries:51,deals:8200,verified:true,since:1896},
+  {name:'DAMAC Holdings',type:'Developer · Enterprise',city:'Dubai, UAE',logo:'https://images.unsplash.com/photo-1486325212027-8081e485255e?w=200&q=80',desc:'Leading luxury real estate developer in the Middle East. Known for branded residences in partnership with Versace Home, Roberto Cavalli, Cavalli, and Trump.',agents:310,listings:2100,countries:9,deals:42000,verified:true,since:2002},
+  {name:'Prime Properties Pakistan',type:'Agency · Regional',city:'Lahore, Pakistan',logo:'https://images.unsplash.com/photo-1486325212027-8081e485255e?w=200&q=80',desc:'Pakistan\'s fastest growing tech-enabled real estate agency. Specialising in DHA, Bahria Town, and overseas Pakistani investment properties across all major cities.',agents:87,listings:620,countries:3,deals:3100,verified:true,since:2015},
+  {name:'Sotheby\'s Int\'l Realty',type:'Luxury Agency · Global',city:'New York, USA',logo:'https://images.unsplash.com/photo-1486325212027-8081e485255e?w=200&q=80',desc:'The world\'s most recognized name in luxury residential real estate brokerage. Serving extraordinary properties and extraordinary lives across 81 countries and territories.',agents:460,listings:3200,countries:81,deals:24000,verified:true,since:1976},
+  {name:'Istanbul Real Estate Co.',type:'Developer · Regional',city:'Istanbul, Turkey',logo:'https://images.unsplash.com/photo-1486325212027-8081e485255e?w=200&q=80',desc:'Leading Turkish property developer specializing in Bosphorus-view residences, mixed-use developments, and citizenship-by-investment properties across Istanbul and Ankara.',agents:64,listings:480,countries:12,deals:5600,verified:true,since:2008},
+];
+
+const IMG_POOL=[
+  'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=500&q=80',
+  'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=500&q=80',
+  'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=500&q=80',
+  'https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=500&q=80',
+  'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=500&q=80',
+  'https://images.unsplash.com/photo-1560185893-a55cbc8c57e8?w=500&q=80',
+  'https://images.unsplash.com/photo-1484154218962-a197022b5858?w=500&q=80',
+  'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=500&q=80',
+  'https://images.unsplash.com/photo-1567767292278-a4f21aa2d36e?w=500&q=80',
+  'https://images.unsplash.com/photo-1574362848149-11496d93a7c7?w=500&q=80',
+  'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=500&q=80',
+  'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=500&q=80',
+];
+
+const LISTINGS_DATA=[
+  // NEW YORK
+  {id:1,title:'Luxury 3BR Penthouse · Central Park West',city:'New York',country:'USA',flag:'🗽',price:7800,cur:'$',beds:3,baths:3,area:2400,floor:42,tag:'fair',oracle:'At market rate',match:94,agent:0,verified:true,furnished:true,type:'penthouse',cityKey:'new_york',amenities:['Concierge','Gym','Pool','Doorman','City View'],img:0,desc:'Spectacular Central Park views from this full-floor penthouse. Chef\'s kitchen, marble bathrooms, private terrace. White-glove building with full services.'},
+  {id:2,title:'Modern 2BR · Tribeca Loft',city:'New York',country:'USA',flag:'🗽',price:5200,cur:'$',beds:2,baths:2,area:1600,floor:3,tag:'deal',oracle:'9% below market',match:88,agent:0,verified:true,furnished:false,type:'apt',cityKey:'new_york',amenities:['Gym','Doorman','Parking','High Ceilings'],img:1,desc:'Stunning Tribeca loft with exposed brick, soaring ceilings, and prime downtown location. Walking distance to all major subway lines.'},
+  {id:3,title:'Studio Apartment · Midtown Manhattan',city:'New York',country:'USA',flag:'🗽',price:2800,cur:'$',beds:0,baths:1,area:520,floor:18,tag:'deal',oracle:'6% below market',match:82,agent:0,verified:true,furnished:true,type:'studio',cityKey:'new_york',amenities:['Gym','Rooftop','WiFi','24hr Security'],img:2,desc:'Bright furnished studio in the heart of Midtown. Perfect for professionals. Steps from Times Square, Grand Central, and all major transport.'},
+  // LONDON
+  {id:4,title:'Victorian 3BR · Kensington',city:'London',country:'UK',flag:'🇬🇧',price:4200,cur:'£',beds:3,baths:2,area:1800,floor:2,tag:'deal',oracle:'11% below market',match:96,agent:1,verified:true,furnished:false,type:'apt',cityKey:'london',amenities:['Garden','Parking','Near School','Period Features'],img:3,desc:'Magnificent Victorian apartment in prime Kensington. Beautifully restored period features with modern luxury finishes. Minutes from top schools and Kensington Palace.'},
+  {id:5,title:'Modern 2BR · Canary Wharf',city:'London',country:'UK',flag:'🇬🇧',price:2900,cur:'£',beds:2,baths:2,area:1100,floor:15,tag:'fair',oracle:'At market rate',match:85,agent:1,verified:true,furnished:true,type:'apt',cityKey:'london',amenities:['Gym','Concierge','River View','24hr Security'],img:4,desc:'Sleek contemporary apartment with stunning Thames views. Ideal for finance professionals. Direct access to Elizabeth line and Jubilee line.'},
+  {id:6,title:'1BR Studio · Shoreditch',city:'London',country:'UK',flag:'🇬🇧',price:2100,cur:'£',beds:1,baths:1,area:620,floor:4,tag:'deal',oracle:'7% below market',match:79,agent:1,verified:false,furnished:true,type:'studio',cityKey:'london',amenities:['WiFi','Gym','Near Tube','Furnished'],img:5,desc:'Stylish furnished apartment in trendy Shoreditch. Perfect for creatives and tech workers. Surrounded by the best restaurants, galleries, and nightlife in London.'},
+  // DUBAI
+  {id:7,title:'Luxury 2BR · Burj Khalifa District',city:'Dubai',country:'UAE',flag:'🇦🇪',price:2400,cur:'$',beds:2,baths:2,area:1400,floor:32,tag:'deal',oracle:'14% below market',match:97,agent:2,verified:true,furnished:true,type:'apt',cityKey:'dubai',amenities:['Pool','Gym','Burj View','Concierge','Valet'],img:6,desc:'Spectacular Burj Khalifa and Fountain views from this premium 2BR. Full luxury amenities, hotel-style services. NESTIQ Fair-Price Oracle confirms exceptional value.'},
+  {id:8,title:'3BR Villa · Dubai Hills Estate',city:'Dubai',country:'UAE',flag:'🇦🇪',price:4100,cur:'$',beds:3,baths:4,area:3200,floor:1,tag:'fair',oracle:'At market rate',match:89,agent:2,verified:true,furnished:false,type:'villa',cityKey:'dubai',amenities:['Private Pool','Garden','Parking','Smart Home','Near School'],img:7,desc:'Stunning standalone villa in Dubai Hills. Private pool, landscaped garden, smart home automation. Located within minutes of top international schools.'},
+  {id:9,title:'Studio · Dubai Marina',city:'Dubai',country:'UAE',flag:'🇦🇪',price:1100,cur:'$',beds:0,baths:1,area:480,floor:8,tag:'deal',oracle:'5% below market',match:83,agent:2,verified:true,furnished:true,type:'studio',cityKey:'dubai',amenities:['Pool','Gym','Marina View','WiFi','Metro Access'],img:8,desc:'Beautiful furnished studio with direct marina views. Perfect for young professionals. Walking distance to Dubai Marina Mall and JBR beach.'},
+  // ISTANBUL
+  {id:10,title:'2BR with Bosphorus View · Beşiktaş',city:'Istanbul',country:'Turkey',flag:'🇹🇷',price:1800,cur:'$',beds:2,baths:2,area:1100,floor:6,tag:'deal',oracle:'18% below market',match:95,agent:3,verified:true,furnished:true,type:'apt',cityKey:'istanbul',amenities:['Bosphorus View','Gym','Security','Furnished','Central Location'],img:9,desc:'Breathtaking Bosphorus views from this fully furnished 2BR in prestigious Beşiktaş. Walking distance to Dolmabahçe Palace and all transport links.'},
+  {id:11,title:'3BR Family Apt · Nişantaşı',city:'Istanbul',country:'Turkey',flag:'🇹🇷',price:2200,cur:'$',beds:3,baths:2,area:1600,floor:3,tag:'fair',oracle:'At market rate',match:81,agent:3,verified:true,furnished:false,type:'apt',cityKey:'istanbul',amenities:['Near School','Parking','Doorman','Shopping Nearby'],img:10,desc:'Spacious family apartment in Nişantaşı, Istanbul\'s most prestigious neighbourhood. Surrounded by top international schools, designer boutiques, and fine dining.'},
+  {id:12,title:'Studio · Kadıköy · Asian Side',city:'Istanbul',country:'Turkey',flag:'🇹🇷',price:750,cur:'$',beds:0,baths:1,area:380,floor:2,tag:'deal',oracle:'12% below market',match:76,agent:3,verified:false,furnished:true,type:'studio',cityKey:'istanbul',amenities:['WiFi','Near Ferry','Furnished','Vibrant Area'],img:11,desc:'Charming furnished studio on Istanbul\'s vibrant Asian side. Steps from Kadıköy market and ferry terminal. Ideal for digital nomads and young professionals.'},
+  // PAKISTAN
+  {id:13,title:'2BR Apartment · DHA Phase 5, Lahore',city:'Lahore',country:'Pakistan',flag:'🇵🇰',price:45000,cur:'PKR',beds:2,baths:2,area:1200,floor:4,tag:'deal',oracle:'12% below market',match:93,agent:4,verified:true,furnished:false,type:'apt',cityKey:'pakistan',amenities:['Parking','Gym','24/7 Security','Backup Power','Near School'],img:0,desc:'Modern 2BR with premium finishes in the heart of DHA Phase 5. The NESTIQ Fair-Price Oracle confirms this is 12% below the area median. Act quickly.'},
+  {id:14,title:'3BR Luxury · Bahria Town Karachi',city:'Karachi',country:'Pakistan',flag:'🇵🇰',price:85000,cur:'PKR',beds:3,baths:3,area:2100,floor:7,tag:'fair',oracle:'At market rate',match:86,agent:7,verified:true,furnished:true,type:'apt',cityKey:'pakistan',amenities:['Pool','Gym','Concierge','Smart Home','Sea View'],img:1,desc:'Ultra-luxury furnished 3BR in Bahria Town\'s most prestigious tower. Panoramic city and sea views. Full concierge services and world-class amenities.'},
+  {id:15,title:'1BR · Gulberg III, Lahore',city:'Lahore',country:'Pakistan',flag:'🇵🇰',price:28000,cur:'PKR',beds:1,baths:1,area:650,floor:2,tag:'deal',oracle:'8% below market',match:80,agent:4,verified:true,furnished:false,type:'apt',cityKey:'pakistan',amenities:['Near School','WiFi','Backup Power','Metro Access'],img:2,desc:'Well-maintained 1BR in Gulberg III, Lahore\'s commercial and residential hub. Close to MM Alam Road, top restaurants, and the Metro Bus station.'},
+];
+
+// ═══════════════════════════════════════
+// PAGE NAVIGATION
+// ═══════════════════════════════════════
+function goPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  document.querySelectorAll('.npb').forEach(b=>b.classList.remove('active'));
+  event&&event.currentTarget&&event.currentTarget.classList&&event.currentTarget.classList.add('active');
+  const map={home:0,listings:1,agents:2,companies:3,blueprint:4};
+  document.querySelectorAll('.npb')[map[id]]?.classList.add('active');
+  window.scrollTo(0,0);
+}
+
+// ═══════════════════════════════════════
+// CITIES GRID
+// ═══════════════════════════════════════
+function renderCities(){
+  document.getElementById('citiesGrid').innerHTML=CITIES.map(c=>`
+    <div class="city-card" onclick="goPage('listings');quickFilter('${c.key}',document.querySelector('#quickFilters .fchip:nth-child(${CITIES.indexOf(c)+4})'))">
+      <img src="${c.img}" alt="${c.name}" loading="lazy">
+      <div class="city-overlay"></div>
+      <div class="city-flag">${c.flag}</div>
+      <div class="city-info">
+        <div class="city-name">${c.name}</div>
+        <div class="city-country">${c.country}</div>
+        <div class="city-count">${c.count}</div>
+      </div>
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════════
+// LISTING CARDS
+// ═══════════════════════════════════════
+let currentListings=[...LISTINGS_DATA];
+function renderCards(data){
+  const g=document.getElementById('cardsGrid');
+  if(!data.length){g.innerHTML=`<div style="text-align:center;padding:60px;color:var(--text3)"><div style="font-size:3rem;margin-bottom:12px">🔍</div><div style="font-weight:700;font-size:1rem;color:var(--text2)">No listings found</div><div style="font-size:.8rem;margin-top:6px">Try different filters or search terms</div></div>`;return;}
+  g.innerHTML=data.map((l,i)=>{
+    const ag=AGENTS_DATA[l.agent];
+    const priceStr=l.cur==='PKR'?`${l.cur} ${l.price.toLocaleString()}`:`${l.cur}${l.price.toLocaleString()}`;
+    const tagCls=l.tag==='deal'?'bdeal':l.tag==='over'?'bover':'bfair';
+    const tagTxt=l.tag==='deal'?'✦ GREAT DEAL':l.tag==='over'?'▲ ABOVE MARKET':'∼ FAIR PRICE';
+    const matchColor=l.match>=90?'#4f8ef7':l.match>=80?'#10b981':'#94a3b8';
+    return `<div class="lcard" style="animation:up .4s ${i*.06}s ease both" onclick="openListing(${l.id})">
+      <div class="lcard-thumb">
+        <img src="${IMG_POOL[l.img]}" alt="${l.title}" loading="lazy">
+        <div class="lcard-thumb-overlay"></div>
+        <div class="badge-deal ${tagCls}">${tagTxt}</div>
+        ${l.verified?'<div class="bchain">⛓ Verified</div>':''}
+        <div class="badge-match"><span style="color:${matchColor}">●</span> ${l.match}% match</div>
+      </div>
+      <div class="lcard-body">
+        <div>
+          <div class="lcard-price">${priceStr}<sub>/${l.cur==='PKR'?'mo':'mo'}</sub></div>
+          <div class="lcard-oracle" style="color:${l.tag==='deal'?'var(--emerald)':l.tag==='over'?'var(--rose)':'var(--amber)'}">${l.oracle} · Fair-Price Oracle™</div>
+          <div class="lcard-title">${l.title}</div>
+          <div class="lcard-loc">${l.flag} ${l.city}, ${l.country}</div>
+          <div class="lcard-specs">
+            <div class="spec">🛏 ${l.beds===0?'Studio':l.beds+'BR'}</div>
+            <div class="spec">🚿 ${l.baths}Ba</div>
+            <div class="spec">📐 ${l.area.toLocaleString()}sqft</div>
+            <div class="spec">🏢 Fl.${l.floor}</div>
+            ${l.furnished?'<div class="spec">🛋 Furnished</div>':''}
+          </div>
+          <div class="lcard-tags">${l.amenities.slice(0,3).map(a=>`<span class="ltag">${a}</span>`).join('')}</div>
+        </div>
+        <div class="lcard-footer">
+          <div class="agent-mini" onclick="event.stopPropagation();openAgent(${l.agent})">
+            <img class="am-av" src="${AGENTS_DATA[l.agent].photo}" alt="">
+            <div>
+              <div class="am-name">${ag.name.split(' ')[0]} ${ag.name.split(' ')[1]}</div>
+              <div class="am-co">${ag.company}</div>
+              <div class="am-rating">★ ${ag.rating}</div>
+            </div>
+          </div>
+          <div class="card-btns">
+            <button class="cbtn cbtn-blue" onclick="event.stopPropagation();showToast('📞 Connecting with ${ag.name.split(' ')[0]}...')">Contact</button>
+            <button class="cbtn cbtn-ghost" onclick="event.stopPropagation();showToast('❤️ Saved to shortlist!')">Save</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('rMeta').textContent=`// ${data.length} listings · sorted by AI match score`;
+}
+
+function quickFilter(f,btn){
+  document.querySelectorAll('#quickFilters .fchip').forEach(b=>b.classList.remove('on'));
+  btn&&btn.classList.add('on');
+  let data=LISTINGS_DATA;
+  if(f==='deal')data=LISTINGS_DATA.filter(l=>l.tag==='deal');
+  else if(f==='verified')data=LISTINGS_DATA.filter(l=>l.verified);
+  else if(f!=='all')data=LISTINGS_DATA.filter(l=>l.cityKey===f);
+  currentListings=data;
+  renderCards(data);
+  updateAIIntel(f,data);
+}
+function updateAIIntel(f,data){
+  const deals=data.filter(l=>l.tag==='deal').length;
+  const verified=data.filter(l=>l.verified).length;
+  document.getElementById('aiIntelTxt').innerHTML=`Market scan complete for <strong>${f==='all'?'all cities':f.replace('_',' ')}</strong>. Found <strong>${data.length} listings</strong> · <strong>${deals} great deals</strong> · <strong>${verified} blockchain verified</strong>. Fair-Price Oracle active. Top result is <strong>${data[0]?.oracle||'being analysed'}</strong>.`;
+}
+function toggleF(btn,group,val){btn.classList.toggle('on')}
+function sortCards(by,btn){
+  document.querySelectorAll('[onclick*="sortCards"]').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  let sorted=[...currentListings];
+  if(by==='match')sorted.sort((a,b)=>b.match-a.match);
+  else if(by==='price_asc')sorted.sort((a,b)=>a.price-b.price);
+  else if(by==='price_desc')sorted.sort((a,b)=>b.price-a.price);
+  renderCards(sorted);
+}
+
+// ═══════════════════════════════════════
+// SEARCH
+// ═══════════════════════════════════════
+function setQ(btn){document.getElementById('heroSearch').value=btn.textContent.trim();doSearch();}
+function doSearch(){
+  const q=document.getElementById('heroSearch').value.trim();
+  const city=document.getElementById('cityFilter').value;
+  if(!q&&city==='all'){goPage('listings');renderCards(LISTINGS_DATA);return;}
+  goPage('listings');
+  document.getElementById('aiIntelTxt').innerHTML='<span style="color:var(--blue)">✦ Analysing query with NLP engine...</span>';
+  setTimeout(()=>{
+    let results=LISTINGS_DATA;
+    if(city!=='all')results=results.filter(l=>l.city===city);
+    const ql=q.toLowerCase();
+    if(ql.includes('studio')||ql.includes('0 bed'))results=results.filter(l=>l.beds===0);
+    else if(ql.includes('1 bed')||ql.includes('1br'))results=results.filter(l=>l.beds===1);
+    else if(ql.includes('2 bed')||ql.includes('2br'))results=results.filter(l=>l.beds===2);
+    else if(ql.includes('3 bed')||ql.includes('3br')||ql.includes('family'))results=results.filter(l=>l.beds>=3);
+    if(ql.includes('furnished'))results=results.filter(l=>l.furnished);
+    if(ql.includes('verified'))results=results.filter(l=>l.verified);
+    const scored=results.map(l=>{
+      let s=l.match;
+      if(ql.includes('deal')||ql.includes('cheap')||ql.includes('affordable'))s+=l.tag==='deal'?8:0;
+      if(ql.includes('luxury')||ql.includes('premium'))s+=l.price>2000?5:0;
+      if(ql.includes('school'))s+=l.amenities.some(a=>a.toLowerCase().includes('school'))?8:0;
+      if(ql.includes('pool'))s+=l.amenities.some(a=>a.toLowerCase().includes('pool'))?8:0;
+      return{...l,match:Math.min(99,s)};
+    }).sort((a,b)=>b.match-a.match);
+    currentListings=scored;
+    renderCards(scored);
+    updateAIIntel(city==='all'?'all cities':city,scored);
+  },900);
+}
+
+// ═══════════════════════════════════════
+// OPEN LISTING MODAL
+// ═══════════════════════════════════════
+function openListing(id){
+  const l=LISTINGS_DATA.find(x=>x.id===id);if(!l)return;
+  const ag=AGENTS_DATA[l.agent];
+  const priceStr=l.cur==='PKR'?`${l.cur} ${l.price.toLocaleString()}`:` ${l.cur}${l.price.toLocaleString()}`;
+  document.getElementById('MODBOX').innerHTML=`
+    <button class="mod-close" onclick="closeMod()">✕</button>
+    <div style="margin-bottom:18px">
+      <div style="font-family:var(--mono);font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;color:var(--blue);margin-bottom:6px">Listing #NQ-${String(id).padStart(4,'0')} · ${l.verified?'⛓ Blockchain Verified':'○ Verification Pending'}</div>
+      <div style="font-family:'Clash Display',sans-serif;font-weight:700;font-size:1.5rem;letter-spacing:-.04em">${l.title}</div>
+      <div style="font-size:.8rem;color:var(--text2);margin-top:4px">${l.flag} ${l.city}, ${l.country}</div>
+    </div>
+    <img class="mod-img" src="${IMG_POOL[l.img]}" alt="${l.title}">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px">
+      <div>
+        <div style="font-family:'Clash Display',sans-serif;font-weight:700;font-size:1.8rem;letter-spacing:-.05em">${priceStr}<span style="font-size:.85rem;font-weight:400;color:var(--text2)">/month</span></div>
+        <div style="font-family:var(--mono);font-size:.65rem;color:${l.tag==='deal'?'var(--emerald)':l.tag==='over'?'var(--rose)':'var(--amber)'};margin-top:4px">${l.oracle} · Fair-Price Oracle™</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-family:'Clash Display',sans-serif;font-size:1.6rem;font-weight:700;color:var(--blue)">${l.match}%</div>
+        <div style="font-size:.65rem;color:var(--text2)">AI Match Score</div>
+      </div>
+    </div>
+    <div style="font-size:.82rem;color:var(--text2);line-height:1.7;margin:14px 0">${l.desc}</div>
+    <div class="mod-specs">
+      <div class="mod-spec"><span class="mod-spec-icon">🛏</span><div class="mod-spec-val">${l.beds===0?'Studio':l.beds}</div><div class="mod-spec-lbl">Bedrooms</div></div>
+      <div class="mod-spec"><span class="mod-spec-icon">🚿</span><div class="mod-spec-val">${l.baths}</div><div class="mod-spec-lbl">Bathrooms</div></div>
+      <div class="mod-spec"><span class="mod-spec-icon">📐</span><div class="mod-spec-val">${l.area.toLocaleString()}</div><div class="mod-spec-lbl">Sq. Feet</div></div>
+      <div class="mod-spec"><span class="mod-spec-icon">🏢</span><div class="mod-spec-val">Fl.${l.floor}</div><div class="mod-spec-lbl">Floor</div></div>
+      <div class="mod-spec"><span class="mod-spec-icon">🛋</span><div class="mod-spec-val">${l.furnished?'Yes':'No'}</div><div class="mod-spec-lbl">Furnished</div></div>
+      <div class="mod-spec"><span class="mod-spec-icon">⛓</span><div class="mod-spec-val" style="font-size:.75rem;color:${l.verified?'var(--emerald)':'var(--text3)'}">${l.verified?'Verified':'Pending'}</div><div class="mod-spec-lbl">Blockchain</div></div>
+    </div>
+    <div>
+      <div style="font-family:var(--mono);font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:8px">Amenities</div>
+      <div class="mod-amenities">${l.amenities.map(a=>`<span class="mam">${a}</span>`).join('')}</div>
+    </div>
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:16px;display:flex;align-items:center;justify-content:space-between;margin-top:16px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <img src="${ag.photo}" style="width:46px;height:46px;border-radius:12px;object-fit:cover;border:1px solid var(--border2)">
+        <div>
+          <div style="font-weight:700;font-size:.9rem">${ag.name}</div>
+          <div style="font-size:.72rem;color:var(--text2)">${ag.company}</div>
+          <div style="font-size:.7rem;color:var(--amber)">★ ${ag.rating} · ${ag.deals} deals</div>
+        </div>
+      </div>
+      <div style="background:var(--emerald-dim);color:#6ee7b7;border:1px solid rgba(16,185,129,.25);font-size:.68rem;font-weight:700;padding:5px 12px;border-radius:100px">✓ Verified Agent</div>
+    </div>
+    <div class="mod-ctas">
+      <button class="mcta mcta-blue" onclick="showToast('🤖 AI AutoPilot qualifying your profile — ${ag.name.split(' ')[0]} will confirm within 2hrs!');closeMod()">🤖 AI AutoPilot</button>
+      <button class="mcta mcta-ghost" onclick="showToast('💬 Encrypted chat opened with ${ag.name.split(' ')[0]}!')">💬 Message Agent</button>
+      <button class="mcta mcta-ghost" onclick="showToast('❤️ Saved to your shortlist!')">❤️ Shortlist</button>
+    </div>`;
+  document.getElementById('MOD').classList.add('on');
+}
+
+// ═══════════════════════════════════════
+// AGENTS
+// ═══════════════════════════════════════
+function renderAgents(){
+  document.getElementById('agentsGrid').innerHTML=AGENTS_DATA.map((a,i)=>`
+    <div class="agent-card" style="animation:up .4s ${i*.07}s ease both" onclick="openAgent(${i})">
+      <img class="ac-photo" src="${a.photo}" alt="${a.name}">
+      ${a.verified?'<div class="ac-vbadge">✓ KYC Verified</div>':''}
+      <div class="ac-name">${a.name}</div>
+      <div class="ac-role">${a.role}</div>
+      <div class="ac-co">${a.company}</div>
+      <div class="ac-location">📍 ${a.city}</div>
+      <div class="ac-stats">
+        <div><div class="ac-stat-val">★${a.rating}</div><div class="ac-stat-lbl">Rating</div></div>
+        <div><div class="ac-stat-val">${a.deals}</div><div class="ac-stat-lbl">Deals</div></div>
+        <div><div class="ac-stat-val">${a.listings}</div><div class="ac-stat-lbl">Listings</div></div>
+      </div>
+      <div class="ac-langs">${a.langs.map(l=>`<span class="lang-tag">${l}</span>`).join('')}</div>
+      <button class="ac-cta" onclick="event.stopPropagation();showToast('📋 Viewing ${a.name}\'s full profile & listings...')">View Profile & Listings</button>
+    </div>`).join('');
+}
+
+function openAgent(i){
+  const a=AGENTS_DATA[i];
+  document.getElementById('MODBOX').innerHTML=`
+    <button class="mod-close" onclick="closeMod()">✕</button>
+    <div style="display:flex;gap:20px;align-items:flex-start;margin-bottom:24px">
+      <img src="${a.photo}" style="width:90px;height:90px;border-radius:20px;object-fit:cover;border:2px solid var(--border2);flex-shrink:0">
+      <div>
+        ${a.verified?'<div class="ac-vbadge" style="margin-bottom:8px">✓ KYC Verified · Background Checked</div>':''}
+        <div style="font-family:\'Clash Display\',sans-serif;font-weight:700;font-size:1.4rem;letter-spacing:-.04em">${a.name}</div>
+        <div style="font-size:.82rem;color:var(--text2);margin-top:3px">${a.role}</div>
+        <div style="font-size:.8rem;color:var(--blue);font-weight:600;margin-top:2px">${a.company}</div>
+        <div style="font-size:.75rem;color:var(--text2);margin-top:4px">📍 ${a.city} · ${a.years} years experience · ${a.speciality}</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px">
+      ${[['★',a.rating,'NESTIQ Rating'],['🤝',a.deals,'Total Deals'],['🏠',a.listings,'Active Listings'],['🗣',a.langs.length,'Languages']].map(([ic,v,l])=>`<div class="mod-spec"><span class="mod-spec-icon">${ic}</span><div class="mod-spec-val">${v}</div><div class="mod-spec-lbl">${l}</div></div>`).join('')}
+    </div>
+    <div style="background:var(--blue-dim);border:1px solid rgba(79,142,247,.2);border-radius:12px;padding:14px;margin-bottom:16px">
+      <div style="font-family:var(--mono);font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;color:var(--blue);margin-bottom:8px">🤖 AI AutoPilot Status</div>
+      <div style="font-size:.8rem;color:var(--text2);line-height:1.6">AI AutoPilot is <strong style="color:var(--emerald)">ACTIVE</strong> for this agent. All leads are automatically qualified — budget verified, ID checked, and viewing scheduled before ${a.name.split(' ')[0]} sees the request. <strong style="color:var(--text)">Average response time: 23 minutes.</strong></div>
+    </div>
+    <div style="margin-bottom:16px">
+      <div style="font-family:var(--mono);font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:8px">Languages</div>
+      <div style="display:flex;gap:7px;flex-wrap:wrap">${a.langs.map(l=>`<span class="lang-tag" style="font-size:.75rem;padding:4px 12px">${l}</span>`).join('')}</div>
+    </div>
+    <div class="mod-ctas">
+      <button class="mcta mcta-blue" onclick="showToast('🤖 AutoPilot activated — ${a.name.split(' ')[0]} notified!');closeMod()">🤖 Request Viewing</button>
+      <button class="mcta mcta-ghost" onclick="showToast('💬 Chat opened with ${a.name.split(' ')[0]}!')">💬 Message</button>
+      <button class="mcta mcta-ghost" onclick="showToast('📋 ${a.name.split(' ')[0]}\'s listings loaded in search!')">🏠 See Listings</button>
+    </div>`;
+  document.getElementById('MOD').classList.add('on');
+}
+
+// ═══════════════════════════════════════
+// COMPANIES
+// ═══════════════════════════════════════
+function renderCompanies(){
+  document.getElementById('companiesGrid').innerHTML=COMPANIES_DATA.map((c,i)=>`
+    <div class="company-card" style="animation:up .4s ${i*.07}s ease both" onclick="openCompany(${i})">
+      <div class="cc-logo" style="background:var(--surface2);width:56px;height:56px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;border:1px solid var(--border2)">🏢</div>
+      ${c.verified?'<div class="cc-verified">✓ Enterprise Verified · KYB</div>':''}
+      <div class="cc-name">${c.name}</div>
+      <div class="cc-type">${c.type} · Est. ${c.since}</div>
+      <div class="cc-desc">${c.desc.slice(0,120)}...</div>
+      <div class="cc-stats">
+        <div><div class="cc-s-val">${c.agents}</div><div class="cc-s-lbl">Agents</div></div>
+        <div><div class="cc-s-val">${c.listings.toLocaleString()}</div><div class="cc-s-lbl">Listings</div></div>
+        <div><div class="cc-s-val">${c.countries}</div><div class="cc-s-lbl">Countries</div></div>
+        <div><div class="cc-s-val">${(c.deals/1000).toFixed(0)}K</div><div class="cc-s-lbl">Deals</div></div>
+      </div>
+    </div>`).join('');
+}
+
+function openCompany(i){
+  const c=COMPANIES_DATA[i];
+  document.getElementById('MODBOX').innerHTML=`
+    <button class="mod-close" onclick="closeMod()">✕</button>
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:6px">
+      <div style="width:60px;height:60px;border-radius:16px;background:var(--surface2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:1.8rem;flex-shrink:0">🏢</div>
+      <div>
+        ${c.verified?'<div class="cc-verified" style="margin-bottom:6px">✓ Enterprise Verified · KYB Compliant</div>':''}
+        <div style="font-family:\'Clash Display\',sans-serif;font-weight:700;font-size:1.3rem;letter-spacing:-.04em">${c.name}</div>
+        <div style="font-size:.78rem;color:var(--text2)">${c.type} · Established ${c.since} · ${c.city}</div>
+      </div>
+    </div>
+    <div style="font-size:.85rem;color:var(--text2);line-height:1.7;margin:16px 0;padding:16px;background:var(--surface2);border-radius:12px;border:1px solid var(--border)">${c.desc}</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px">
+      ${[['👔',c.agents,'Agents'],['🏠',c.listings.toLocaleString(),'Listings'],['🌍',c.countries,'Countries'],['🤝',(c.deals/1000).toFixed(0)+'K','Total Deals']].map(([ic,v,l])=>`<div class="mod-spec"><span class="mod-spec-icon">${ic}</span><div class="mod-spec-val">${v}</div><div class="mod-spec-lbl">${l}</div></div>`).join('')}
+    </div>
+    <div style="background:var(--blue-dim);border:1px solid rgba(79,142,247,.2);border-radius:12px;padding:14px;margin-bottom:16px">
+      <div style="font-family:var(--mono);font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;color:var(--blue);margin-bottom:6px">NESTIQ Enterprise Partnership</div>
+      <div style="font-size:.8rem;color:var(--text2);line-height:1.6">This company is on NESTIQ's <strong style="color:var(--text)">Enterprise Plan</strong> — all ${c.agents} agents have AI AutoPilot activated, listings are auto-translated in 10 languages, and market intelligence reports are generated weekly.</div>
+    </div>
+    <div class="mod-ctas">
+      <button class="mcta mcta-blue" onclick="showToast('🏢 Viewing ${c.name} listings...');closeMod()">View All Listings</button>
+      <button class="mcta mcta-ghost" onclick="showToast('📧 Partnership enquiry sent to ${c.name}!')">Partnership Enquiry</button>
+      <button class="mcta mcta-ghost" onclick="showToast('👔 Connecting with ${c.name} agents!')">Meet Agents</button>
+    </div>`;
+  document.getElementById('MOD').classList.add('on');
+}
+
+// ═══════════════════════════════════════
+// NESTI CHAT
+// ═══════════════════════════════════════
+const NESTI_KB=[
+  {k:['hello','hi','hey','salam','مرحبا'],r:'Hello! I\'m <strong>Nesti</strong>, your AI property advisor. I\'ve scanned 24,000+ listings across 40+ countries. Tell me your budget, city, and lifestyle — I\'ll find your perfect match in seconds. 🏠'},
+  {k:['budget','cheap','affordable','price','cost','pkr','dollar','pound','aed'],r:'Great question on budget! Here\'s a quick global snapshot: <strong>New York</strong> studio from $2,800/mo · <strong>London</strong> 1BR from £2,100 · <strong>Dubai</strong> studio from $1,100 · <strong>Istanbul</strong> studio from $750 · <strong>Karachi/Lahore</strong> 1BR from PKR 25,000. What\'s your target budget and city?'},
+  {k:['fake','scam','fraud','safe','trust','secure','blockchain'],r:'Great concern — and exactly why NESTIQ exists. Our <strong>3-Layer Fraud Shield</strong> works like this:<br>⛓ Blockchain title verification — cryptographically impossible to fake<br>🛡 AI Fraud Sentinel — reverse image search + perceptual hashing<br>🪪 Agent KYC — government ID + face verification required<br><strong>Result: 99.2% fraud blocked before you ever see it.</strong>'},
+  {k:['agent','contact','call','book','viewing','schedule'],r:'All NESTIQ agents are background-checked and KYC verified. More importantly — our <strong>AI AutoPilot</strong> pre-qualifies YOU before connecting. Your budget is verified, your ID is checked, and the viewing is scheduled automatically. The agent wakes up with confirmed appointments — no cold calls. <strong>Average agent response: 23 minutes.</strong>'},
+  {k:['school','family','children','kids','education'],r:'For families, I recommend these current top picks: <strong>Kensington, London</strong> (near 5 top schools · £4,200/mo) · <strong>Dubai Hills</strong> (near international schools · $4,100/mo) · <strong>DHA Lahore</strong> (near top schools · PKR 45,000/mo). Want me to filter family-friendly listings only?'},
+  {k:['freelancer','remote','work from home','digital nomad','wifi','internet'],r:'Perfect — I specialise in freelancer matches! Top picks right now: <strong>Shoreditch London</strong> (WiFi + creative hub · £2,100) · <strong>Dubai Marina Studio</strong> (WiFi + pool · $1,100) · <strong>Kadıköy Istanbul</strong> (fast internet + coffee culture · $750) · <strong>Johar Town Lahore</strong> (1Gbps + backup power · PKR 18,000). Which city?'},
+  {k:['invest','investment','roi','yield','return','buy'],r:'Smart question. NESTIQ\'s market data shows top rental yields globally: <strong>Istanbul</strong> 7.4% avg yield · <strong>Dubai</strong> 6.8% · <strong>Lahore DHA</strong> 7.2% · <strong>London</strong> 4.1% · <strong>New York</strong> 3.8%. Istanbul and Lahore are currently the strongest ROI markets. Want a full investment report for any city?'},
+  {k:['new york','nyc','manhattan','brooklyn'],r:'<strong>New York</strong> market update: 3,240 listings live. Average 2BR in Manhattan: $4,800/mo. <strong>Best current deal:</strong> Tribeca Loft 2BR at $5,200 — 9% below market. Studio options from $2,800. Vacancy rates are low — I recommend acting within 48 hours on top listings.'},
+  {k:['london','uk','england','british'],r:'<strong>London</strong> market update: 2,810 listings live. <strong>Hottest deal right now:</strong> Victorian 3BR Kensington at £4,200 — 11% below market, blockchain verified. Average 2BR in Zone 1: £3,200. Shoreditch and Canary Wharf showing strong availability for young professionals.'},
+  {k:['dubai','uae','emirates'],r:'<strong>Dubai</strong> market update: 4,120 listings live. <strong>Top pick:</strong> Burj Khalifa District 2BR at $2,400 — an incredible 14% below market, fully furnished, blockchain verified. Downtown vacancy is rising slightly — great time for buyers. Marina studios from $1,100/mo.'},
+  {k:['istanbul','turkey','turkish'],r:'<strong>Istanbul</strong> market update: 1,890 listings live. <strong>Best value globally:</strong> Bosphorus View 2BR at only $1,800/mo — 18% below market. Turkish real estate offering citizenship at $400K+ investment. Kadıköy and Beşiktaş showing strongest rental demand.'},
+  {k:['karachi','lahore','islamabad','pakistan','pkr'],r:'<strong>Pakistan</strong> market update: 2,340 listings live. <strong>DHA Lahore 2BR:</strong> PKR 45,000 (12% below market) · <strong>Bahria Karachi 3BR:</strong> PKR 85,000 · <strong>Gulberg Lahore 1BR:</strong> PKR 28,000. All blockchain verified listings. PKR to USD rate makes Pakistan exceptional value for overseas Pakistanis.'},
+];
+const FALLBACKS=['Let me cross-reference that against our live market data... Could you tell me your <strong>city and budget</strong> so I can give you the most precise recommendation?','Interesting question. NESTIQ\'s AI processes 50+ data points per listing — from crime trends to nearby business openings. This gives you intelligence no other platform offers. What city are you searching in?','I\'m scanning our verified database for that now. While I do — are you looking to <strong>rent or buy</strong>? That will help me narrow down the best options for you.'];
+let nTurn=0;
+
+function addNMsg(text,role){
+  const el=document.createElement('div');el.className=`nmsg ${role}`;
+  el.innerHTML=`<div class="nmsg-av">${role==='nesti'?'✦':'👤'}</div><div class="nmsg-bubble">${text}</div>`;
+  const msgs=document.getElementById('nestiMsgs');
+  msgs.appendChild(el);msgs.scrollTop=msgs.scrollHeight;
+}
+function sendNesti(){
+  const inp=document.getElementById('nestiInp');
+  const v=inp.value.trim();if(!v)return;
+  addNMsg(v,'user');inp.value='';
+  setTimeout(()=>{
+    const ql=v.toLowerCase();
+    let reply=FALLBACKS[nTurn%FALLBACKS.length];nTurn++;
+    for(const kb of NESTI_KB){if(kb.k.some(k=>ql.includes(k))){reply=kb.r;break;}}
+    addNMsg(reply,'nesti');
+  },600+Math.random()*400);
+}
+
+// ═══════════════════════════════════════
+// MODAL
+// ═══════════════════════════════════════
+function closeMod(){document.getElementById('MOD').classList.remove('on')}
+
+// ═══════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════
+function showToast(msg){
+  const t=document.getElementById('TOAST');t.textContent=msg;t.classList.add('on');
+  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),3500);
+}
+
+// ═══════════════════════════════════════
+// INIT ALL
+// ═══════════════════════════════════════
+function initAll(){
+  renderCities();
+  renderCards(LISTINGS_DATA);
+  renderAgents();
+  renderCompanies();
+  // City filter chips for sidebar
+  const cityChips=document.getElementById('cityChips');
+  if(cityChips){
+    const cities=[...new Set(LISTINGS_DATA.map(l=>l.city))];
+    cityChips.innerHTML=cities.map(c=>`<button class="fchip" onclick="toggleF(this,'city','${c}')">${c}</button>`).join('');
+  }
+  // Nesti initial messages
+  setTimeout(()=>addNMsg('Hello! I\'m <strong>Nesti</strong>, your AI property co-pilot. I\'ve just scanned <strong>24,000+ verified listings</strong> across 40+ countries. What are you looking for today? 🌍','nesti'),500);
+  setTimeout(()=>addNMsg('🔥 <strong>Live deal alert:</strong> Bosphorus View 2BR Istanbul at $1,800/mo is <strong>18% below market</strong> — only 2 units left. 3 users viewing right now.','nesti'),2800);
+  // Update AI intel
+  updateAIIntel('all',LISTINGS_DATA);
+}
+</script>
+</body>
+</html>
